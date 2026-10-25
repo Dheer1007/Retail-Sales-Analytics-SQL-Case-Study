@@ -50,4 +50,4 @@ This project focuses on analyzing retail sales data using SQL to derive meaningf
 
 ## Author
 
-Dheer Singh
+Dhirendra Singh
