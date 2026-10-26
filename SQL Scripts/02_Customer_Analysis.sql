@@ -4,76 +4,99 @@ Customer Analysis Queries
 /*=====================================================
 QUESTION 1
 
-Summarize total sales and quantities sold per product.
+Count number of transactions per customer.
 
 BUSINESS OBJECTIVE:
-Evaluate product performance.
+Understand customer purchase frequency.
 =====================================================*/
 
 SELECT
-    ProductID,
-    SUM(QuantityPurchased) AS Total_Quantity_Sold,
-    ROUND(SUM(QuantityPurchased * Price),2) AS Total_Sales
+    CustomerID,
+    COUNT(TransactionID) AS NumberOfTransactions
 FROM sales_transaction
-GROUP BY ProductID
-ORDER BY Total_Sales DESC;
+GROUP BY CustomerID
+ORDER BY NumberOfTransactions DESC;
 
 
 /*=====================================================
 QUESTION 2
 
-Evaluate product category performance.
+Identify high-frequency customers.
 
 BUSINESS OBJECTIVE:
-Identify categories that require marketing focus.
+Identify high-value customers.
 =====================================================*/
 
 SELECT
-    pi.Category,
-    SUM(st.QuantityPurchased) AS TotalUnitsSold,
-    ROUND(SUM(st.QuantityPurchased * st.Price),2)
-    AS TotalSales
-FROM sales_transaction st
-JOIN product_inventory pi
-ON st.ProductID = pi.ProductID
-GROUP BY pi.Category
-ORDER BY TotalSales DESC;
+    CustomerID,
+    COUNT(TransactionID) AS NumberOfTransactions,
+    ROUND(SUM(QuantityPurchased * Price),2)
+    AS TotalSpent
+FROM sales_transaction
+GROUP BY CustomerID
+HAVING COUNT(TransactionID) > 10
+   AND SUM(QuantityPurchased * Price) > 1000
+ORDER BY TotalSpent DESC;
 
 
 /*=====================================================
 QUESTION 3
 
-Find top 10 products by revenue.
+Identify low-frequency customers.
 
 BUSINESS OBJECTIVE:
-Identify products contributing most revenue.
+Identify occasional customers.
 =====================================================*/
 
 SELECT
-    ProductID,
-    SUM(QuantityPurchased) AS TotalQuantitySold,
+    CustomerID,
+    COUNT(TransactionID) AS NumberOfTransactions,
     ROUND(SUM(QuantityPurchased * Price),2)
-    AS TotalRevenue
+    AS TotalSpent
 FROM sales_transaction
-GROUP BY ProductID
-ORDER BY TotalRevenue DESC
-LIMIT 10;
+GROUP BY CustomerID
+HAVING COUNT(TransactionID) <= 2
+ORDER BY NumberOfTransactions ASC,
+         TotalSpent DESC;
 
 
 /*=====================================================
 QUESTION 4
 
-Find bottom 10 products by quantity sold.
+Identify repeat purchases.
 
 BUSINESS OBJECTIVE:
-Identify underperforming products.
+Understand repeat buying behaviour.
 =====================================================*/
 
 SELECT
+    CustomerID,
     ProductID,
-    SUM(QuantityPurchased) AS TotalUnitsSold
+    COUNT(TransactionID) AS TimesPurchased
 FROM sales_transaction
-GROUP BY ProductID
-HAVING SUM(QuantityPurchased) > 0
-ORDER BY TotalUnitsSold ASC
-LIMIT 10;
+GROUP BY CustomerID, ProductID
+HAVING COUNT(TransactionID) > 1
+ORDER BY TimesPurchased DESC;
+
+
+/*=====================================================
+QUESTION 5
+
+Customer Loyalty Analysis.
+
+BUSINESS OBJECTIVE:
+Measure customer retention period.
+=====================================================*/
+
+SELECT
+    CustomerID,
+    MIN(TransactionDate_updated) AS FirstPurchaseDate,
+    MAX(TransactionDate_updated) AS LastPurchaseDate,
+    DATEDIFF(
+        MAX(TransactionDate_updated),
+        MIN(TransactionDate_updated)
+    ) AS DaysBetweenPurchases
+FROM sales_transaction
+GROUP BY CustomerID
+HAVING DaysBetweenPurchases > 0
+ORDER BY DaysBetweenPurchases DESC;
