@@ -1,0 +1,4 @@
+/*
+Retail Sales Analytics SQL Case Study
+Data Cleaning Queries
+*/
